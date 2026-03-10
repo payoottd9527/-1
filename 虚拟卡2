@@ -1,0 +1,47 @@
+# 伪代码示例
+def create_card_for_user(user_info, card_params):
+    # 1. 创建客户
+    client = requests.post("https://api.photonpay.com/v1/clients", 
+                          json={"name": user_info.name, "email": user_info.email})
+    
+    # 2. 建立账户协议
+    account = requests.post("https://api.photonpay.com/v1/accounts",
+                           json={"client_id": client.id, "currency": "USD"})
+    
+    # 3. 开通虚拟卡
+    card = requests.post("https://api.photonpay.com/v1/cards",
+                        json={"account_id": account.id, 
+                              "type": "virtual",
+                              "limit": 5000})
+    
+    # 4. 返回卡片信息（注意加密存储）
+    return {"card_id": card.id, "last4": card.last4}
+第三步：卡片管理与展示（用户体验）
+用户通过KYC、申请卡片后，你需要把卡片信息安全地展示给用户：
+￼
+￼
+功能
+实现方式
+注意事项
+卡片列表
+GET /cards 查询用户所有卡片
+只返回卡号后4位，完整卡号需二次验证
+卡片详情
+调用发卡商API获取
+支持查看余额、交易记录、消费限额
+安全展示
+敏感信息加密存储
+卡号、CVV、有效期需加密，展示时需用户验证
+卡片操作
+冻结/解冻/注销
+PATCH /cards/{id} 更新卡片状态-
+7
+安全规范：必须遵守PCI DSS合规要求-
+1
+-
+10
+：
+• 不要明文存储完整卡号
+• 展示卡号时使用遮罩（如40963608****0026）-
+8
+• 传输过程必须加密（HTTPS + 额外的应用层加密）
